@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progress Tracker</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/progressbar.js/dist/progressbar.min.css">
+</head>
+<body>
+    <h1>Progress Tracker</h1>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Current</th>
+            <th>Max</th>
+            <th>Percent</th>
+        </tr>
+        {% for item in progress_items %}
+        <tr id="progress-{{ item.id }}">
+            <td>{{ item.id }}</td>
+            <td>{{ item.title }}</td>
+            <td>{{ item.current }}</td>
+            <td>{{ item.max }}</td>
+            <td>
+                <div class="progressbar" data-progress="{{ item.percent }}"></div>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    
+    <script src="https://cdn.jsdelivr.net/npm/progressbar.js/dist/progressbar.min.js"></script>
+    <script>
+        function updateProgress() {
+            fetch("/get_progress/")
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(item => {
+                        const elementId = `progress-${item.id}`;
+                        const existingElement = document.getElementById(elementId);
+
+                        if (existingElement) {
+                            // Remove existing row
+                            existingElement.remove();
+                        }
+
+                        const newRow = document.createElement('tr');
+                        newRow.id = elementId;
+                        newRow.innerHTML = `
+                            <td>${item.id}</td>
+                            <td>${item.title}</td>
+                            <td>${item.current}</td>
+                            <td>${item.max}</td>
+                            <td><div class="progressbar" data-progress="${item.percent}"></div></td>
+                        `;
+
+                        document.querySelector('table').appendChild(newRow);
+
+                        const progressBar = new ProgressBar.Line(newRow.querySelector('.progressbar'), {
+                            strokeWidth: 4,
+                            easing: 'easeInOut',
+                            duration: 200,
+                            color: '#FFEA82',
+                            trailColor: '#eee',
+                            trailWidth: 1,
+                            svgStyle: { width: '100%', height: '100%' },
+                            text: {
+                                value: `${item.percent.toFixed(2)}%`,
+                                className: 'progressbar-text' // Apply custom class for text color
+                            },
+                            step: (state, bar) => {
+                                bar.setText((bar.value() * 100).toFixed(2) + '%');
+                            }
+                        });
+                        progressBar.set(item.percent / 100);
+                    });
+                })
+                .catch(error => {
+                    console.error("Error fetching progress:", error);
+                });
+        }
+
+        // Update progress every 5 seconds
+        setInterval(updateProgress, 5000);
+        // Initial update
+        updateProgress();
+    </script>
+</body>
+</html>
