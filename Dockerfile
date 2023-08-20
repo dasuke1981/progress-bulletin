@@ -8,15 +8,16 @@ COPY requirements.txt /tmp/
 RUN apt-get update && apt-get install -y git curl
 RUN pip3 install --upgrade pip && pip3 install -r /tmp/requirements.txt
 
-# # Copy the Python backend code into the container
-# COPY . .
+# Copy the Python backend code into the container
+COPY . .
 
-# # Build the React app
-# # You can replace "npm" with "yarn" if you prefer using Yarn
-# RUN apt-get update && \
-#     apt-get install -y curl && \
-#     curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - && \
-#     apt-get install -y nodejs && \
+# Build the React app
+# You can replace "npm" with "yarn" if you prefer using Yarn
+RUN apt-get update && \
+    apt-get install -y curl && \
+    curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - && \
+    apt-get install -y nodejs
+    # apt-get install -y nodejs && \
 #     npm cache clear --force && \ 
 #     npm install && \
 #     npm run build
